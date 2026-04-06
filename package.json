@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --platform=node --target=node18 --bundle --format=cjs --outfile=dist/server.cjs",
+    "build": "vite build && esbuild server.ts --platform=node --target=node18 --bundle --format=cjs --external:better-sqlite3 --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
