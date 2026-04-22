@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { savePage, getAllPages, deletePage, getPageById, updatePage } from '../database/db.js';
+import { savePage, getAllPages, deletePage, getPageById, updatePage, dbPing } from '../database/db.js';
 
 export const uploadPage = (req: Request, res: Response) => {
   try {
@@ -26,7 +26,18 @@ export const uploadPage = (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'HTML content too large (max 5MB)' });
     }
 
-    const id = uuidv4().replace(/-/g, '').substring(0, 10); // Short ID
+    let id = req.body.id || req.body.slug;
+    
+    if (id) {
+      // Validate ID
+      id = id.toString().replace(/[^a-z0-9-]/gi, '').toLowerCase();
+      const existing = getPageById(id);
+      if (existing) {
+        return res.status(400).json({ success: false, error: 'Page ID (slug) is already taken' });
+      }
+    } else {
+      id = uuidv4().replace(/-/g, '').substring(0, 10); // Short ID
+    }
     
     // Handle expiration (optional)
     let expiresAt = null;
@@ -125,5 +136,24 @@ export const removePage = (req: Request, res: Response) => {
   } catch (error) {
     console.error('Delete page error:', error);
     res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+export const checkHealth = (req: Request, res: Response) => {
+  try {
+    const result = dbPing();
+    res.json({ 
+      success: true, 
+      status: 'Database is active', 
+      timestamp: new Date().toISOString(),
+      ping: result 
+    });
+  } catch (error) {
+    console.error('Database health check failed:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Database connection failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 };

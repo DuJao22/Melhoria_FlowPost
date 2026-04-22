@@ -1,9 +1,12 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { uploadPage, listPages, removePage, editPage, getPageContent } from '../controllers/pageController.js';
+import { uploadPage, listPages, removePage, editPage, getPageContent, checkHealth } from '../controllers/pageController.js';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
+
+// Health Check / Keep-Alive Ping
+router.get('/health', checkHealth);
 
 // Upload HTML endpoint
 router.post('/upload', upload.single('file'), uploadPage);

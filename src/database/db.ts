@@ -60,3 +60,12 @@ export function deletePage(id: string) {
   const stmt = db.prepare('DELETE FROM pages WHERE id = ?');
   stmt.run(id);
 }
+
+/**
+ * Performs a simple query to verify database connectivity.
+ * Used for keep-alive/health check purposes.
+ */
+export function dbPing() {
+  const stmt = db.prepare('SELECT 1 as ping');
+  return stmt.get();
+}
